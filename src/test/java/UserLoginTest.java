@@ -10,14 +10,14 @@ public class UserLoginTest extends BaseTest{
         createUser(registerRequest);
         Response response = loginUser(new LoginRequest(registerRequest.getEmail(), registerRequest.getPassword(), registerRequest.getName()));
         response.then().assertThat().body("success", is(true)).and().statusCode(200);
-        String accessToken = response.as(RegisterResponse.class).getAccessToken();
-        deleteUser(accessToken);
+        setAccessToken(response.as(RegisterResponse.class).getAccessToken());
     }
 
     @Test
     public void checkUserLoginWithWrongData() {
         LoginRequest loginRequest = new LoginRequest("stellars2024@gmail.com", "tuman1&", "everBurger");
         Response response = loginUser(loginRequest);
+
         response.then().assertThat().body("success", is(false)).and().statusCode(401);
     }
 }

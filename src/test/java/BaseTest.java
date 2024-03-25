@@ -1,10 +1,24 @@
 import io.qameta.allure.Step;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
+import org.junit.After;
 import org.junit.Before;
 import static io.restassured.RestAssured.given;
 
 public class BaseTest {
+    private String accessToken;
+
+    public String getAccessToken() {
+        return accessToken;
+    }
+
+    public void setAccessToken(String accessToken) {
+        this.accessToken = accessToken;
+    }
+
+    public boolean isAccessToken(){
+        return accessToken != null;
+    }
 
     @Before
     public void setUp() {
@@ -20,7 +34,7 @@ public class BaseTest {
         Response response = given()
                 .header("Content-type", "application/json")
                 .body(registerRequest)
-                .post("api/auth/register");
+                .post(Endpoints.REGISTER);
 
         printResponse(response);
 
@@ -32,13 +46,13 @@ public class BaseTest {
         Response response = given()
                 .header("Content-type", "application/json")
                 .body(loginRequest)
-                .post("/api/auth/login");
+                .post(Endpoints.LOGIN);
         return response;
     }
 
     @Step("Send DELETE request to /api/auth/user")
     public void deleteUser(String accessToken) {
-        given().header("Authorization", accessToken).delete("/api/auth/user");
+        given().header("Authorization", accessToken).delete(Endpoints.USER);
     }
 
     @Step("Send PATCH request to /api/auth/user")
@@ -47,7 +61,7 @@ public class BaseTest {
                 .header("Content-type", "application/json")
                 .header("Authorization", accessToken)
                 .body(changeUserRequest)
-                .patch("/api/auth/user");
+                .patch(Endpoints.USER);
         printResponse(response);
         return response;
     }
@@ -58,7 +72,7 @@ public class BaseTest {
                 .header("Content-type", "application/json")
                 .header("Authorization", accessToken)
                 .body(ingredientsRequest)
-                .post("/api/orders");
+                .post(Endpoints.ORDERS);
 
         printResponse(response);
 
@@ -69,11 +83,26 @@ public class BaseTest {
     public Response getOrders(String accessToken) {
         Response response = given()
                 .header("Authorization", accessToken)
-                .get("/api/orders");
+                .get(Endpoints.ORDERS);
 
         printResponse(response);
 
         return response;
+    }
+
+    @Step("Send GET request to /api/ingredients")
+    public Response getIngredientList() {
+        Response response = given()
+                .header("Content-type", "application/json")
+                .get(Endpoints.INGREDIENTS);
+        return response;
+    }
+
+    @After
+    public void clear() {
+        if(isAccessToken()) {
+            deleteUser(getAccessToken());
+        }
     }
 }
 
